@@ -7,6 +7,10 @@
 #include <vector>
 #include <queue>
 
+// Source - https://stackoverflow.com/a/32593825
+// Posted by PhD AP EcE, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-05-13, License - CC BY-SA 4.0 : https://creativecommons.org/licenses/by-sa/4.0/legalcode.txt
+
 class ThreadPool
 {
 private:
