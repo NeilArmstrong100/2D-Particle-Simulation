@@ -14,9 +14,9 @@ void ThreadPool::thread_loop()
         {
             std::unique_lock lock(queue_mutex);
             mutex_condition.wait(lock, [this] {
-                return !jobs.empty() || should_terminate_;
+                return !jobs.empty() || should_terminate;
                 });
-            if (should_terminate_)
+            if (should_terminate)
                 return;
             job = jobs.front();
             jobs.pop();
@@ -47,7 +47,7 @@ bool ThreadPool::busy()
 void ThreadPool::stop() {
     {
         std::unique_lock lock(queue_mutex);
-        should_terminate_ = true;
+        should_terminate = true;
     }
     mutex_condition.notify_all();
     for (std::thread& active_thread : threads)
