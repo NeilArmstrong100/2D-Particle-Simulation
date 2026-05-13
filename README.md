@@ -1,0 +1,1 @@
+Quantum mechanics simulation trying to get as close to the actual universe without solving Schrodinger's equation. This project is meant to better understand how quantum physics relates to our universe in it's entirety.
