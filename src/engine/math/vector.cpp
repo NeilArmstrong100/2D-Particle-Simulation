@@ -23,6 +23,8 @@ float math::dot(const Vec2& a, const Vec2& b)
 Vec2 math::normalize(const Vec2& v)
 {
 	const float mag = magnitude(v);
+	if (mag == 0.0f) 
+		return { .x = 0.0f, .y = 0.0f };
 	return { .x = v.x / mag, .y = v.y / mag };
 };
 

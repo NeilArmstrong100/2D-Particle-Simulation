@@ -64,8 +64,46 @@ int main()
 	const GLint zoom_id = glGetUniformLocation(shader.id, "zoom");
 	const GLint aspect_ratio_id = glGetUniformLocation(shader.id, "aspectRatio");
 
-	engine::create_nucleus({ .x = 0.0f, .y = 0.0f }, 118, 118);
-	engine::create_antinucleus({ .x = 25.0f, .y = 0.0f }, 118, 118);
+	/*engine::create_nucleus({ 0.0f, 0.0f}, 6, 6);
+	engine::create_electron({ 30.0f, 0.0f }, 30.0f);
+	engine::create_electron({ -30.0f, 0.0f }, 30.0f);
+	engine::create_electron({ 40.0f, 0.0f }, 40.0f);
+	engine::create_electron({ -40.0f, 0.0f }, 40.0f);
+	engine::create_electron({ 0.0f, 40.0f }, 40.0f);
+	engine::create_electron({ 0.0f, -40.0f }, 40.0f);
+
+	engine::create_nucleus({ 200.0f, 0.0f }, 8, 8);
+	engine::create_electron({ 230.0f, 0.0f }, 30.0f);
+	engine::create_electron({ 170.0f, 0.0f }, 30.0f);
+	engine::create_electron({ 240.0f, 0.0f }, 40.0f);
+	engine::create_electron({ 160.0f, 0.0f }, 40.0f);
+	engine::create_electron({ 200.0f, 40.0f }, 40.0f);
+	engine::create_electron({ 200.0f, -40.0f }, 40.0f);
+	engine::create_electron({ 220.0f, 20.0f }, 40.0f);
+	engine::create_electron({ 220.0f, -20.0f }, 40.0f);
+
+	engine::create_nucleus({ -200.0f, 0.0f }, 8, 8);
+	engine::create_electron({ -230.0f, 0.0f }, 30.0f);
+	engine::create_electron({ -170.0f, 0.0f }, 30.0f);
+	engine::create_electron({ -240.0f, 0.0f }, 40.0f);
+	engine::create_electron({ -160.0f, 0.0f }, 40.0f);
+	engine::create_electron({ -200.0f, 40.0f }, 40.0f);
+	engine::create_electron({ -200.0f, -40.0f }, 40.0f);
+	engine::create_electron({ -220.0f, 20.0f }, 40.0f);
+	engine::create_electron({ -220.0f, -20.0f }, 40.0f);*/
+
+	/*engine::create_proton({ -30.0f, 0.0f });
+	engine::create_electron({ 0.0f, 10.0f }, 30.0f);
+	engine::create_proton({ 30.0f, 0.0f });
+	engine::create_electron({ 0.0f, -10.0f }, 30.0f);
+
+	engine::create_proton({ -30.0f, 100.0f });
+	engine::create_electron({ 0.0f, 110.0f }, 30.0f);
+	engine::create_proton({ 30.0f, 100.0f });
+	engine::create_electron({ 0.0f, 90.0f }, 30.0f);*/
+
+	//create_water({ 0.0f, 0.0f });
+	engine::create_nucleus({ 0.0f, 0.0f }, 1, 0);
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<const void*>(offsetof(Vertex, position)));
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<const void*>(offsetof(Vertex, color)));
@@ -162,19 +200,19 @@ void create_water(const engine::Vec2 position)
 	const float y = position.y;
 
 	engine::create_nucleus({ .x = x, .y = y }, 8, 8);
-	engine::create_electron({ .x = x + 30.0f, .y = y }, 30.0f);
-	engine::create_electron({ .x = x - 30.0f, .y = y }, 30.0f);
-	engine::create_electron({ .x = x + 40.0f, .y = y + 10.0f }, 40.0f);
-	engine::create_electron({ .x = x + 40.0f, .y = y - 10.0f }, 40.0f);
-	engine::create_electron({ .x = x - 40.0f, .y = y + 10.0f }, 40.0f);
-	engine::create_electron({ .x = x - 40.0f, .y = y - 10.0f }, 40.0f);
-	engine::create_electron({ .x = x + 10.0f, .y = y + 40.0f }, 40.0f);
-	engine::create_electron({ .x = x + 10.0f, .y = y - 40.0f }, 40.0f);
+	engine::create_electron({ .x = x + 15.0f, .y = y }, 15.0f);
+	engine::create_electron({ .x = x - 15.0f, .y = y }, 15.0f);
+	engine::create_electron({ .x = x + 20.0f, .y = y + 15.0f }, 25.0f);
+	engine::create_electron({ .x = x + 20.0f, .y = y - 15.0f }, 25.0f);
+	engine::create_electron({ .x = x - 20.0f, .y = y + 15.0f }, 25.0f);
+	engine::create_electron({ .x = x - 20.0f, .y = y - 15.0f }, 25.0f);
+	engine::create_electron({ .x = x + 15.0f, .y = y + 20.0f }, 25.0f);
+	engine::create_electron({ .x = x + 15.0f, .y = y - 20.0f }, 25.0f);
 
 	engine::create_nucleus({ .x = x + 100.0f, .y = y }, 1, 0);
-	engine::create_electron({ .x = x + 60.0f, .y = y }, 40.0f);
+	engine::create_electron({ .x = x + 75.0f, .y = y }, 25.0f);
 	engine::create_nucleus({ .x = x - 100.0f, .y = y }, 1, 0);
-	engine::create_electron({ .x = x - 60.0f, .y = y }, 40.0f);
+	engine::create_electron({ .x = x - 75.0f, .y = y }, 25.0f);
 }
 
 void create_antiwater(const engine::Vec2 position)
@@ -183,17 +221,17 @@ void create_antiwater(const engine::Vec2 position)
 	const float y = position.y;
 
 	engine::create_antinucleus({ .x = x, .y = y }, 8, 8);
-	engine::create_positron({ .x = x + 30.0f, .y = y }, 30.0f);
-	engine::create_positron({ .x = x - 30.0f, .y = y }, 30.0f);
-	engine::create_positron({ .x = x + 40.0f, .y = y + 10.0f }, 40.0f);
-	engine::create_positron({ .x = x + 40.0f, .y = y - 10.0f }, 40.0f);
-	engine::create_positron({ .x = x - 40.0f, .y = y + 10.0f }, 40.0f);
-	engine::create_positron({ .x = x - 40.0f, .y = y - 10.0f }, 40.0f);
-	engine::create_positron({ .x = x + 10.0f, .y = y + 40.0f }, 40.0f);
-	engine::create_positron({ .x = x + 10.0f, .y = y - 40.0f }, 40.0f);
+	engine::create_positron({ .x = x + 30.0f, .y = y }, 15.0f);
+	engine::create_positron({ .x = x - 30.0f, .y = y }, 15.0f);
+	engine::create_positron({ .x = x + 40.0f, .y = y + 10.0f }, 20.0f);
+	engine::create_positron({ .x = x + 40.0f, .y = y - 10.0f }, 20.0f);
+	engine::create_positron({ .x = x - 40.0f, .y = y + 10.0f }, 20.0f);
+	engine::create_positron({ .x = x - 40.0f, .y = y - 10.0f }, 20.0f);
+	engine::create_positron({ .x = x + 10.0f, .y = y + 40.0f }, 20.0f);
+	engine::create_positron({ .x = x + 10.0f, .y = y - 40.0f }, 20.0f);
 
 	engine::create_antinucleus({ .x = x + 100.0f, .y = y }, 1, 0);
-	engine::create_positron({ .x = x + 60.0f, .y = y }, 40.0f);
+	engine::create_positron({ .x = x + 60.0f, .y = y }, 20.0f);
 	engine::create_antinucleus({ .x = x - 100.0f, .y = y }, 1, 0);
-	engine::create_positron({ .x = x - 60.0f, .y = y }, 40.0f);
+	engine::create_positron({ .x = x - 60.0f, .y = y }, 20.0f);
 }

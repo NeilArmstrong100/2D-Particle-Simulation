@@ -11,9 +11,61 @@
 
 using namespace engine;
 
-static float wavelength(float total_energy)
+static float wavelength(const float total_energy)
 {
 	return (math::LIGHTSPEED * 10.0f) / total_energy;
+}
+
+static Vec2 center_of_mass(const Particle* particle)
+{
+	Vec2 com = particle->position * particle->mass;
+	float total_mass = particle->mass;
+
+	for (const Particle* p : particle->bonds)
+	{
+		com = com + (p->position * p->mass);
+		total_mass += p->mass;
+	}
+
+	if (total_mass > 0.0f)
+		com = com / total_mass;
+
+	return com;
+}
+
+static Vec2 center_of_mass(const Nucleus* nucleus)
+{
+	Vec2 com = { 0.0f, 0.0f };
+	float total_mass = 0.0f;
+
+	for (Particle* p : nucleus->hadrons)
+	{
+		com = com + (p->position * p->mass);
+		total_mass += p->mass;
+	}
+
+	if (total_mass > 0.0f)
+		com = com / total_mass;
+
+	return com;
+}
+
+static void electron_shell_collision(Particle* electron, const Particle* nucleus) 
+{
+	const Vec2 center = nucleus->parent ? center_of_mass(nucleus->parent) : center_of_mass(nucleus);
+	const Vec2 offset = electron->position - center;
+	const float dist = math::magnitude(offset);
+
+	if (dist < electron->energy) 
+	{
+		const Vec2 normal = offset / dist;
+		const float penetration = electron->energy - dist;
+
+		electron->position = electron->position + normal * penetration;
+
+		if (const float radial_velocity = electron->velocity.x * normal.x + electron->velocity.y * normal.y; radial_velocity < 0.0f) 
+			electron->velocity = electron->velocity - normal * radial_velocity;
+	}
 }
 
 void physics::start(const uint32_t target_framerate, const bool electrons_orbit, const bool photons_waves)
@@ -41,7 +93,47 @@ void physics::run()
 
 			float dt = static_cast<float>(elapsed.count()) / 1'000'000'000;
 
-			size_t size = particles.size();
+			size_t size;
+
+			for (Nucleus* nucleus : nuclei)
+			{
+				size = nucleus->hadrons.size();
+
+				for (size_t i = 0; i < size; ++i)
+					for (size_t j = i + 1; j < size; ++j)
+					{
+						Particle* a = nucleus->hadrons[i];
+						Particle* b = nucleus->hadrons[j];
+
+						const Vec2 a_com = center_of_mass(a);
+						const Vec2 b_com = center_of_mass(b);
+
+						float a_total_mass = a->mass;
+						float b_total_mass = b->mass;
+						for (Particle* p : a->bonds)
+							a_total_mass += p->mass;
+						for (Particle* p : b->bonds)
+							b_total_mass += p->mass;
+
+						const Vec2 dir = math::normalize(b_com - a_com);
+						const float r = std::max(math::distance(a_com, b_com), 0.01f);
+
+						const float yukawa = math::yukawa(1.8f, r);
+
+						const Vec2 a_force = dir * math::acceleration(yukawa, a_total_mass) * dt;
+						const Vec2 b_force = dir * math::acceleration(yukawa, b_total_mass) * dt;
+
+						a->velocity = a->velocity + a_force;
+						b->velocity = b->velocity - b_force;
+
+						for (Particle* p : a->bonds)
+							p->velocity = p->velocity + a_force;
+						for (Particle* p : b->bonds)
+							p->velocity = p->velocity - b_force;
+					}
+			}
+
+			size = particles.size();
 
 			for (size_t i = 0; i < size; ++i)
 				for (size_t j = i + 1; j < size; ++j)
@@ -112,22 +204,6 @@ void physics::run()
 					float coulomb = math::coulomb(a->charge, b->charge, r2);			// Electromagnetic Force
 					float qq = math::qq_interactions(a->color, b->color, 0.18f, r);		// Strong Force
 					float qaq = math::qaq_interactions(a->color, b->color, 0.18f, r);
-
-					float theta = std::atan2(b->position.y - a->position.y, b->position.x - a->position.x);
-
-					if (r < math::spring_distance_min)
-					{
-						if (a->color == b->color)
-						{
-							qq *= 1.0f;
-							qaq *= 1.0f;
-						}
-						else
-						{
-							qq *= -1.0f;
-							qaq *= -1.0f;
-						}
-					}
 
 					if (a->is_anti_quark() == b->is_anti_quark())
 						qaq = 0;
@@ -227,35 +303,35 @@ void physics::run()
 
 						// electron-electron repulsion (weakened for stability)
 						if (a->is_electron && b->is_electron)
-							coulomb *= 0.5f;
+							coulomb *= 0.05f;
 					}
 
 					if (!a->is_electron && !b->is_electron)
 						if (a->parent != b->parent)
 							coulomb *= 10000.0f; // tune this
 
-					if ((a->is_electron && !b->is_electron && !b->is_boson && r < a->energy) ||
-						(!a->is_electron && !a->is_boson && b->is_electron && r < b->energy))
-						coulomb *= -1.0f;
+					if (a->is_electron &&
+						!b->is_electron &&
+						!b->is_boson)
+						electron_shell_collision(a, b);
+
+					if (b->is_electron &&
+						!a->is_electron &&
+						!a->is_boson)
+						electron_shell_collision(b, a);
+
+					const Vec2 dir = math::normalize(b->position - a->position);
 
 					float a_acceleration = math::acceleration(gravity + coulomb - strong, a->mass);
-					float afx = a_acceleration * std::cos(theta);
-					float afy = a_acceleration * std::sin(theta);
+					const Vec2 force_a = dir * a_acceleration * dt;
 
 					float b_acceleration = math::acceleration(gravity + coulomb - strong, b->mass);
-					float bfx = b_acceleration * std::cos(theta);
-					float bfy = b_acceleration * std::sin(theta);
+					const Vec2 force_b = dir * b_acceleration * dt;
 
 					if (a->mass != 0.0f)
-					{
-						a->velocity.x += afx * dt;
-						a->velocity.y += afy * dt;
-					}
+						a->velocity = a->velocity + force_a;
 					if (b->mass != 0.0f)
-					{
-						b->velocity.x -= bfx * dt;
-						b->velocity.y -= bfy * dt;
-					}
+						b->velocity = b->velocity - force_b;
 
 					// Electron movement
 					if (electron_orbit)
@@ -295,69 +371,35 @@ void physics::run()
 							b->virtual_position = b->position;
 					}
 
+					if (a->mass > 0.0f &&
+						b->mass > 0.0f &&
+						r <= a->radius + b->radius)
+					{
+						Vec2 normal = math::normalize(b->position - a->position);
+
+						float penetration = a->radius + b->radius - r;
+
+						Vec2 correction = normal * (penetration * 0.5f);
+
+						a->position = a->position - correction;
+						b->position = b->position + correction;
+
+						Vec2 rel = b->velocity - a->velocity;
+
+						float separating = rel.x * normal.x + rel.y * normal.y;
+
+						if (separating < 0.0f)
+						{
+							Vec2 impulse = normal * separating * 0.5f;
+
+							a->velocity = a->velocity + impulse;
+							b->velocity = b->velocity - impulse;
+						}
+					}
+
 					// Quark decay
 					math::decay(a, b, dt);
 				}
-			
-			for (Nucleus* nucleus : nuclei)
-			{
-				size = nucleus->hadrons.size();
-				for (size_t i = 0; i < size; ++i)
-					for (size_t j = i + 1; j < size; ++j)
-					{
-						Particle* a = nucleus->hadrons[i];
-						Particle* b = nucleus->hadrons[j];
-
-						if (a->is_photon || b->is_photon)
-							continue;
-
-						Vec2 avec = a->position;
-						Vec2 bvec = b->position;
-
-						float amass = a->mass;
-						float bmass = b->mass;
-						for (Particle* p : a->bonds)
-						{
-							avec = avec + (p->position * p->mass);
-							amass += p->mass;
-						}
-
-						for (Particle* p : b->bonds)
-						{
-							bvec = bvec + (p->position * p->mass);
-							bmass += p->mass;
-						}
-
-						avec = avec / amass;
-						bvec = bvec / bmass;
-
-						float dist = math::distance(avec, bvec);
-
-						float yukawa = math::acceleration(math::yukawa(1.8f, dist), amass);
-
-						float theta1 = std::atan2(bvec.y - avec.y, bvec.x - avec.x);
-						float fx1 = yukawa * std::cos(theta1);
-						float fy1 = yukawa * std::sin(theta1);
-
-						a->velocity.x += fx1 * dt;
-						a->velocity.y += fy1 * dt;
-
-						for (Particle* p : a->bonds)
-						{
-							p->velocity.x += fx1 * dt;
-							p->velocity.y += fy1 * dt;
-						}
-
-						b->velocity.x -= fx1 * dt;
-						b->velocity.y -= fy1 * dt;
-
-						for (Particle* p : b->bonds)
-						{
-							p->velocity.x -= fx1 * dt;
-							p->velocity.y -= fy1 * dt;
-						}
-					}
-			}
 
 			for (Particle* particle : particles)
 			{

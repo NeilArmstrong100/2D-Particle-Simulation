@@ -413,8 +413,8 @@ namespace engine
 		for (unsigned int i = 0; i < protons; i++)
 		{
 			if (i % 4 == 0 && i != 0)
-				y_offset+=2;
-			x_offset = static_cast<float>(i % 4) * 4.0f;
+				y_offset+=1;
+			x_offset = static_cast<float>(i % 4) * 2.0f;
 			Particle* hadron = create_proton(Vec2{ .x = position.x + x_offset - center, .y = position.y + y_offset - center });
 			temp.push_back(hadron);
 			temp.push_back(hadron->bonds[0]);
@@ -423,8 +423,8 @@ namespace engine
 		for (unsigned int i = 0; i < neutrons; i++)
 		{
 			if (i % 4 == 0)
-				y_offset+=2;
-			x_offset = static_cast<float>(i % 4) * 4.0f;
+				y_offset+=1;
+			x_offset = static_cast<float>(i % 4) * 2.0f;
 			Particle* hadron = create_neutron(Vec2{ .x = position.x + x_offset - center, .y = position.y + y_offset - center });
 			temp.push_back(hadron);
 			temp.push_back(hadron->bonds[0]);
@@ -447,8 +447,8 @@ namespace engine
 		for (unsigned int i = 0; i < antiprotons; i++)
 		{
 			if (i % 4 == 0 && i != 0)
-				y_offset += 2;
-			x_offset = static_cast<float>(i % 4) * 4.0f;
+				y_offset += 1;
+			x_offset = static_cast<float>(i % 4) * 2.0f;
 			Particle* hadron = create_antiproton(Vec2{ .x = position.x + x_offset - center, .y = position.y + y_offset - center });
 			temp.push_back(hadron);
 			temp.push_back(hadron->bonds[0]);
@@ -457,8 +457,8 @@ namespace engine
 		for (unsigned int i = 0; i < antineutrons; i++)
 		{
 			if (i % 4 == 0)
-				y_offset += 2;
-			x_offset = static_cast<float>(i % 4) * 4.0f;
+				y_offset += 1;
+			x_offset = static_cast<float>(i % 4) * 2.0f;
 			Particle* hadron = create_antineutron(Vec2{ .x = position.x + x_offset - center, .y = position.y + y_offset - center });
 			temp.push_back(hadron);
 			temp.push_back(hadron->bonds[0]);
