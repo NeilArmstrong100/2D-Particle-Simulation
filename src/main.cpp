@@ -10,7 +10,7 @@
 std::vector<engine::Particle*> engine::particles{};
 std::vector<engine::Nucleus*> engine::nuclei{};
 
-static float aspect_ratio = 8.0f / 6.0f;
+static float aspect_ratio = 4.0f / 3.0f;
 
 static void key_callback(GLFWwindow*, int, int, int, int);
 static void framebuffer_size_callback(GLFWwindow*, const int width, const int height)
@@ -53,6 +53,8 @@ int main()
 	std::println("{}", version);
 
 	constexpr size_t MAX_POINTS = 10000;
+
+	constexpr float sensitivity = 0.0003f;
 
 	using namespace engine::renderer;
 	Camera camera{ .position { .x = 0.0f, .y = 0.0f }, .zoom = 0.01f };
@@ -103,7 +105,7 @@ int main()
 	engine::create_electron({ 0.0f, 90.0f }, 30.0f);*/
 
 	//create_water({ 0.0f, 0.0f });
-	engine::create_nucleus({ 0.0f, 0.0f }, 1, 0);
+	engine::create_nucleus({ 0.0f, 0.0f }, 100, 100);
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<const void*>(offsetof(Vertex, position)));
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<const void*>(offsetof(Vertex, color)));
@@ -138,13 +140,13 @@ int main()
 
 		glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(offset * sizeof(Vertex)), vertices);
 
-		if (w) camera.position.y -= 0.003f / camera.zoom;
-		if (a) camera.position.x += 0.003f / camera.zoom;
-		if (s) camera.position.y += 0.003f / camera.zoom;
-		if (d) camera.position.x -= 0.003f / camera.zoom;
+		if (w) camera.position.y -= sensitivity / camera.zoom;
+		if (a) camera.position.x += sensitivity / camera.zoom;
+		if (s) camera.position.y += sensitivity / camera.zoom;
+		if (d) camera.position.x -= sensitivity / camera.zoom;
 
-		if (q) camera.zoom *= 0.997f;
-		if (e) camera.zoom *= 1.003f;
+		if (q) camera.zoom *= 1 - sensitivity;
+		if (e) camera.zoom *= 1 + sensitivity;
 
 		glClear(GL_COLOR_BUFFER_BIT);
 

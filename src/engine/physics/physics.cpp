@@ -50,23 +50,23 @@ static Vec2 center_of_mass(const Nucleus* nucleus)
 	return com;
 }
 
-static void electron_shell_collision(Particle* electron, const Particle* nucleus) 
-{
-	const Vec2 center = nucleus->parent ? center_of_mass(nucleus->parent) : center_of_mass(nucleus);
-	const Vec2 offset = electron->position - center;
-	const float dist = math::magnitude(offset);
-
-	if (dist < electron->energy) 
-	{
-		const Vec2 normal = offset / dist;
-		const float penetration = electron->energy - dist;
-
-		electron->position = electron->position + normal * penetration;
-
-		if (const float radial_velocity = electron->velocity.x * normal.x + electron->velocity.y * normal.y; radial_velocity < 0.0f) 
-			electron->velocity = electron->velocity - normal * radial_velocity;
-	}
-}
+//static void electron_shell_collision(Particle* electron, const Particle* nucleus) 
+//{
+//	const Vec2 center = nucleus->parent ? center_of_mass(nucleus->parent) : center_of_mass(nucleus);
+//	const Vec2 offset = electron->position - center;
+//	const float dist = math::magnitude(offset);
+//
+//	if (dist < electron->energy) 
+//	{
+//		const Vec2 normal = offset / dist;
+//		const float penetration = electron->energy - dist;
+//
+//		electron->position = electron->position + normal * penetration;
+//
+//		if (const float radial_velocity = electron->velocity.x * normal.x + electron->velocity.y * normal.y; radial_velocity < 0.0f) 
+//			electron->velocity = electron->velocity - normal * radial_velocity;
+//	}
+//}
 
 void physics::start(const uint32_t target_framerate, const bool electrons_orbit, const bool photons_waves)
 {
@@ -130,6 +130,19 @@ void physics::run()
 							p->velocity = p->velocity + a_force;
 						for (Particle* p : b->bonds)
 							p->velocity = p->velocity - b_force;
+
+						Vec2 momentum = { 0, 0 };
+						float total_mass = 0.0f;
+
+						for (Particle* p : nucleus->hadrons)
+						{
+							momentum = momentum + p->velocity * p->mass;
+							total_mass += p->mass;
+						}
+
+						Vec2 drift_velocity = momentum / total_mass;
+						for (Particle* p : nucleus->hadrons)
+							p->velocity = p->velocity - drift_velocity;
 					}
 			}
 
@@ -297,6 +310,7 @@ void physics::run()
 					if (!flag)
 						strong = 0;
 
+					// Electron interactions (strengthened for stability)
 					if (a->is_electron || b->is_electron)
 					{
 						coulomb *= 10000.0f;
@@ -306,19 +320,27 @@ void physics::run()
 							coulomb *= 0.05f;
 					}
 
+					// Nucleus-nucleus electromagnetic force (strengthened)
 					if (!a->is_electron && !b->is_electron)
 						if (a->parent != b->parent)
 							coulomb *= 10000.0f; // tune this
 
+					// Electron-shell collision handling (disabled for now, as it can cause instability)
 					if (a->is_electron &&
 						!b->is_electron &&
 						!b->is_boson)
-						electron_shell_collision(a, b);
+					{
+						//electron_shell_collision(a, b);
+						coulomb *= -1.0f;
+					}
 
 					if (b->is_electron &&
 						!a->is_electron &&
 						!a->is_boson)
-						electron_shell_collision(b, a);
+					{
+						//electron_shell_collision(b, a);
+						coulomb *= -1.0f;
+					}
 
 					const Vec2 dir = math::normalize(b->position - a->position);
 

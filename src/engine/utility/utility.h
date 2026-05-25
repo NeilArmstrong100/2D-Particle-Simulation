@@ -182,6 +182,18 @@ namespace engine
 			for (Particle* p : hadrons)
 				p->parent = const_cast<Nucleus*>(this);
 		}
+
+		[[nodiscard]] std::vector<Particle*> get_all_particles() const
+		{
+			auto result = std::vector<Particle*>{};
+			for (Particle* p : hadrons)
+			{
+				result.push_back(p);
+				for (Particle* bond : p->bonds)
+					result.push_back(bond);
+			}
+			return result;
+		}
 	};
 
 	static Particle* create_proton(const Vec2 position)

@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\chase\source\repos\2D Particle Simulation\libraries\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\chase\source\repos\2D Particle Simulation\libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\chase\source\repos\2D-Particle-Simulation\libraries\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\chase\source\repos\2D-Particle-Simulation\libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -147,6 +147,9 @@
     <ClInclude Include="src\engine\threads\thread_pool.h" />
     <ClInclude Include="src\engine\utility\utility.h" />
     <ClInclude Include="src\engine\video\video.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="2D Particle Simulation.slnx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
