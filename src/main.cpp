@@ -104,8 +104,9 @@ int main()
 	engine::create_proton({ 30.0f, 100.0f });
 	engine::create_electron({ 0.0f, 90.0f }, 30.0f);*/
 
-	//create_water({ 0.0f, 0.0f });
-	engine::create_nucleus({ 0.0f, 0.0f }, 100, 100);
+	for (unsigned int i = 0; i < 10; i++)
+		for (unsigned int j = 0; j < 10; j++)
+			engine::create_nucleus({15.0f * i, 15.0f * j}, 1, 0);
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<const void*>(offsetof(Vertex, position)));
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<const void*>(offsetof(Vertex, color)));

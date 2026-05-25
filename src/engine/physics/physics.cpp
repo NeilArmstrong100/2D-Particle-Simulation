@@ -11,6 +11,8 @@
 
 using namespace engine;
 
+static constexpr float tickspeed = 1.0f;
+
 static float wavelength(const float total_energy)
 {
 	return (math::LIGHTSPEED * 10.0f) / total_energy;
@@ -120,8 +122,8 @@ void physics::run()
 
 						const float yukawa = math::yukawa(1.8f, r);
 
-						const Vec2 a_force = dir * math::acceleration(yukawa, a_total_mass) * dt;
-						const Vec2 b_force = dir * math::acceleration(yukawa, b_total_mass) * dt;
+						const Vec2 a_force = dir * math::acceleration(yukawa, a_total_mass) * tickspeed * dt;
+						const Vec2 b_force = dir * math::acceleration(yukawa, b_total_mass) * tickspeed * dt;
 
 						a->velocity = a->velocity + a_force;
 						b->velocity = b->velocity - b_force;
@@ -328,7 +330,7 @@ void physics::run()
 					// Electron-shell collision handling (disabled for now, as it can cause instability)
 					if (a->is_electron &&
 						!b->is_electron &&
-						!b->is_boson)
+						!b->is_boson && r < b->energy)
 					{
 						//electron_shell_collision(a, b);
 						coulomb *= -1.0f;
@@ -336,7 +338,7 @@ void physics::run()
 
 					if (b->is_electron &&
 						!a->is_electron &&
-						!a->is_boson)
+						!a->is_boson && r < b->energy)
 					{
 						//electron_shell_collision(b, a);
 						coulomb *= -1.0f;
@@ -345,10 +347,10 @@ void physics::run()
 					const Vec2 dir = math::normalize(b->position - a->position);
 
 					float a_acceleration = math::acceleration(gravity + coulomb - strong, a->mass);
-					const Vec2 force_a = dir * a_acceleration * dt;
+					const Vec2 force_a = dir * a_acceleration * tickspeed * dt;
 
 					float b_acceleration = math::acceleration(gravity + coulomb - strong, b->mass);
-					const Vec2 force_b = dir * b_acceleration * dt;
+					const Vec2 force_b = dir * b_acceleration * tickspeed * dt;
 
 					if (a->mass != 0.0f)
 						a->velocity = a->velocity + force_a;
@@ -369,7 +371,7 @@ void physics::run()
 						{
 							a->life += dt / a->energy;
 
-							float wave = std::sin(a->life) * (math::WAVE_HEIGHT / a->energy);
+							float wave = std::sin(a->life * tickspeed) * (math::WAVE_HEIGHT / a->energy);
 
 							a->virtual_position = a->position + perp * wave;
 						}
@@ -385,7 +387,7 @@ void physics::run()
 						{
 							b->life += dt / b->energy;
 
-							float wave = std::sin(b->life) * (math::WAVE_HEIGHT / b->energy);
+							float wave = std::sin(b->life * tickspeed) * (math::WAVE_HEIGHT / b->energy);
 
 							b->virtual_position = b->position + perp * wave;
 						}
